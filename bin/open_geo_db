@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require "open_geo_db/cli"
+
+OpenGeoDb::CLI.new.run
