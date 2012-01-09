@@ -1,24 +1,35 @@
 # OpenGeoDb
 
-TODO: Write a gem description
+A simple Gem for creating and destroying MySQL databases containing data
+from the "OpenGeoDB" project (http://opengeodb.giswiki.org/wiki/OpenGeoDB).
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'open_geo_db'
+```ruby
+gem("open_geo_db")
+```
 
 And then execute:
 
-    $ bundle
+```bash
+$ bundle
+```
 
 Or install it yourself as:
 
-    $ gem install open_geo_db
+```bash
+$ gem install open_geo_db
+```
 
 ## Usage
 
-TODO: Write usage instructions here
+For detailed usage run:
+
+```bash
+$ bundle exec open_geo_db --help
+```
 
 ## Contributing
 
