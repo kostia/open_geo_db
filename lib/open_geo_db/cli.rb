@@ -5,53 +5,39 @@ module OpenGeoDb
   class CLI
     include Mixlib::CLI
 
-    option(:action,
-       :required => true,
-       :short => "-a ACTION",
-       :long => "--action ACTION",
-       :proc => Proc.new { |l| l.to_sym },
-       :description => "Action to do (`create` or `destroy`)")
+    DEFAULT_CONFIG = {"open_geo_db" =>
+        {"database" => "open_geo_db", "username" => "root", "password" => ""}}
 
-    option(:config,
-        :default => File.join(File.dirname(__FILE__), "open_geo_db.yml"),
-        :short => "-c CONFIG",
-        :long => "--config CONFIG",
-        :description => "The configuration file to use (default `open_geo_db.yml`)")
+    def self.action_option(name, description)
+      option(name, :short => "-#{name.to_s[0].chr} config", :long => "--#{name} CONFIG",
+          :description => description)
+    end
 
-    option(:help,
-        :boolean => true,
-        :on => :tail,
-        :short => "-h",
-        :long => "--help",
-        :description => "Show this message",
-        :show_options => true,
-        :exit => 0)
+    action_option(:create, "Create database with config file CONFIG")
+    action_option(:destroy, "Destroy database with config file CONFIG")
+    action_option(:generate, "Generate config file CONFIG")
+
+    option(:help, :boolean => true, :on => :tail, :short => "-h", :long => "--help",
+        :description => "Show this message", :show_options => true, :exit => 0)
 
     def run
       parse_options
-
-      if File.exist?(config[:config])
-        puts("Using config file `#{config[:config]}`...")
-        yaml = YAML.load_file(config[:config])["open_geo_db"]
-        @database = yaml["database"]
-        @username = yaml["username"]
-        @password = "-p#{yaml["password"]}" if yaml["password"] and yaml["password"].any?
-      end
-
-      action = config[:action]
-
-      case action
-      when :create then create
-      when :destroy then destroy
-      else
-        puts("Unknown action `#{action}`. For usage see `open_geo_db --help`")
-        exit 1
-      end
+      send(config.keys.first)
     end
 
     private
 
+    def load_config
+      config_file = config.values.first
+      puts("Using config file #{config_file}")
+      yaml = YAML.load_file(config_file)["open_geo_db"]
+      @database = yaml["database"]
+      @username = yaml["username"]
+      @password = "-p#{yaml["password"]}" if yaml["password"] and yaml["password"].any?
+    end
+
     def create
+      load_config
       sh("mysqladmin -u#{@username} #{@password} create #{@database}")
       %w(opengeodb-begin DE DEhier AT AThier CH CHhier opengeodb-end).each do |basename|
         file = File.join(File.dirname(__FILE__), %w(.. .. vendor sql), "#{basename}.sql")
@@ -60,7 +46,14 @@ module OpenGeoDb
     end
 
     def destroy
+      load_config
       sh("mysqladmin -u#{@username} #{@password} drop -f #{@database}")
+    end
+
+    def generate
+      config_file = config.values.first
+      puts("Writing config to #{config_file}")
+      File.open(config_file, "w") { |f| f.write(DEFAULT_CONFIG.to_yaml) }
     end
 
     def sh(command)

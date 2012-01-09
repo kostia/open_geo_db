@@ -1,6 +1,0 @@
---- %YAML:1.0
-open_geo_db:
-  database: "open_geo_db"
-  username: "root"
-  password: ""
-...
