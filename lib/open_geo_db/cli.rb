@@ -37,8 +37,6 @@ module OpenGeoDb
         @username = yaml["username"]
         @password = "-p#{yaml["password"]}" if yaml["password"] and yaml["password"].any?
       end
-      @database ||= "open_geo_db"
-      @username ||= "root"
 
       action = config[:action]
 
