@@ -13,7 +13,7 @@ module OpenGeoDb
        :description => "Action to do (`create` or `destroy`)")
 
     option(:config,
-        :default => "open_geo_db.yml",
+        :default => File.join(File.dirname(__FILE__), "open_geo_db.yml"),
         :short => "-c CONFIG",
         :long => "--config CONFIG",
         :description => "The configuration file to use (default `open_geo_db.yml`)")
@@ -31,6 +31,7 @@ module OpenGeoDb
       parse_options
 
       if File.exist?(config[:config])
+        puts("Using config file `#{config[:config]}`...")
         yaml = YAML.load_file(config[:config])["open_geo_db"]
         @database = yaml["database"]
         @username = yaml["username"]
