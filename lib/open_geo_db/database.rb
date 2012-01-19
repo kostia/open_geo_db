@@ -6,7 +6,7 @@ module OpenGeoDb
     def initialize(config)
       @database = config["database"]
       @username = config["username"]
-      @password = "-p#{config["password"]}" if config["password"] and config["password"].any?
+      @password = "-p#{config["password"]}" if config["password"]
     end
 
     def execute(action)
