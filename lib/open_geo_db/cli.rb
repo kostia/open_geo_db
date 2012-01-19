@@ -1,5 +1,6 @@
-require "mixlib/cli"
 require "yaml"
+require "mixlib/cli"
+require "open_geo_db/database"
 
 module OpenGeoDb
   class CLI
@@ -22,43 +23,23 @@ module OpenGeoDb
 
     def run
       parse_options
-      send(config.keys.first)
+      action = config.keys.first
+      @config_file = config.values.first
+      if action == :generate
+        generate
+      else
+        puts("Using config file #{@config_file}")
+        database = OpenGeoDb::Database.new(YAML.load_file(@config_file)["open_geo_db"])
+        database.execute(action)
+      end
     end
 
     private
 
-    def load_config
-      config_file = config.values.first
-      puts("Using config file #{config_file}")
-      yaml = YAML.load_file(config_file)["open_geo_db"]
-      @database = yaml["database"]
-      @username = yaml["username"]
-      @password = "-p#{yaml["password"]}" if yaml["password"] and yaml["password"].any?
-    end
-
-    def create
-      load_config
-      sh("mysqladmin -u#{@username} #{@password} create #{@database}")
-      %w(opengeodb-begin DE DEhier AT AThier CH CHhier opengeodb-end).each do |basename|
-        file = File.join(File.dirname(__FILE__), %w(.. .. vendor sql), "#{basename}.sql")
-        sh("mysql -u#{@username} #{@password} #{@database} < #{file}")
-      end
-    end
-
-    def destroy
-      load_config
-      sh("mysqladmin -u#{@username} #{@password} drop -f #{@database}")
-    end
-
     def generate
-      config_file = config.values.first
-      puts("Writing config to #{config_file}")
-      File.open(config_file, "w") { |f| f.write(DEFAULT_CONFIG.to_yaml) }
-    end
-
-    def sh(command)
-      puts(command)
-      %x{#{command}}
+      @config_file = config.values.first
+      puts("Writing config to #{@config_file}")
+      File.open(@config_file, "w") { |f| f.write(DEFAULT_CONFIG.to_yaml) }
     end
   end
 end
